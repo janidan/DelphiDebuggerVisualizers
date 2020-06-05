@@ -84,15 +84,17 @@
         <DCCReference Include="..\source\DDV.Visualizer.Guid.pas"/>
         <DCCReference Include="..\source\DDV.Visualizer.TObject.pas"/>
         <DCCReference Include="..\source\DDV.Visualizer.TComponent.pas"/>
-        <BuildConfiguration Include="Release">
-            <Key>Cfg_2</Key>
-            <CfgParent>Base</CfgParent>
-        </BuildConfiguration>
+        <DCCReference Include="..\source\DDV.Visualizers.Evaluator.pas"/>
+        <DCCReference Include="..\source\DDV.Visualizers.CommonOTA.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_1</Key>
+            <CfgParent>Base</CfgParent>
+        </BuildConfiguration>
+        <BuildConfiguration Include="Release">
+            <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
         </BuildConfiguration>
     </ItemGroup>

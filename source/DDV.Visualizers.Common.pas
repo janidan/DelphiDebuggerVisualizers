@@ -11,54 +11,18 @@ unit DDV.Visualizers.Common;
 interface
 
 uses
-  ToolsAPI;
+  ToolsAPI,
+  DDV.Visualizers.CommonOTA,
+  DDV.Visualizers.Evaluator;
 
 type
-  TCommonNotifier = class( TInterfacedObject, IOTANotifier )
-  protected
-    {$REGION 'IOTANotifier interface implementation'}
-    { This procedure is called immediately after the item is successfully saved.
-      This is not called for IOTAWizards }
-    procedure AfterSave; virtual;
-    { This function is called immediately before the item is saved. This is not
-      called for IOTAWizard }
-    procedure BeforeSave; virtual;
-    { The associated item is being destroyed so all references should be dropped.
-      Exceptions are ignored. }
-    procedure Destroyed; virtual;
-    { This associated item was modified in some way. This is not called for
-      IOTAWizards }
-    procedure Modified; virtual;
-    {$ENDREGION 'IOTANotifier interface implementation'}
-  end;
-
-  TCommonThreadNotifier = class( TCommonNotifier, IOTAThreadNotifier, IOTAThreadNotifier160 )
-  protected
-    {$REGION 'IOTAThreadNotifier interface implementation'}
-    { This is called when the process state changes for this thread }
-    procedure ThreadNotify( Reason: TOTANotifyReason ); virtual;
-    { This is called when an evaluate that returned erDeferred completes.
-      ReturnCode <> 0 if error }
-    procedure EvaluteComplete( const ExprStr, ResultStr: string; CanModify: Boolean; ResultAddress, ResultSize: LongWord; ReturnCode: Integer );
-    { This is called when a modify that returned erDeferred completes.
-      ReturnCode <> 0 if error }
-    procedure ModifyComplete( const ExprStr, ResultStr: string; ReturnCode: Integer ); virtual;
-    {$ENDREGION 'IOTAThreadNotifier interface implementation'}
-    {$REGION 'IOTAThreadNotifier160 interface implementation'}
-    { This is called when an evaluate that returned erDeferred completes.
-      ReturnCode <> 0 if error }
-    procedure EvaluateComplete( const ExprStr, ResultStr: string; CanModify: Boolean; ResultAddress: TOTAAddress; ResultSize: LongWord;
-      ReturnCode: Integer ); virtual;
-    {$ENDREGION 'IOTAThreadNotifier160 interface implementation'}
-  end;
-
   TCommonDebuggerVisualizerType = record
     TypeName: string;
     AllDescendants: Boolean;
     IsGeneric: Boolean;
   end;
 
-  TCommonDebuggerVisualizer = class( TCommonThreadNotifier, IOTADebuggerVisualizer, IOTADebuggerVisualizer250, IOTADebuggerVisualizerValueReplacer )
+  TCommonDebuggerVisualizer = class( TInterfacedObject, IOTADebuggerVisualizer, IOTADebuggerVisualizer250, IOTADebuggerVisualizerValueReplacer )
   protected
     function ConvertStaticToDynamicArray<T>( const aStatic: array of T ): TArray<T>;
     function GetSupportedTypesList: TArray<TCommonDebuggerVisualizerType>; virtual; abstract;
@@ -102,70 +66,17 @@ type
 
   TCommonDebuggerEvaluationVisualizer = class( TCommonDebuggerVisualizer )
   private
-    // The DeferredEvaluation variables are used for storing the temporary results during the ExecuteEvaluation call.
-    FDeferredEvaluationNotifierIndex: Integer;
-    FDeferredEvaluationCompleted: Boolean;
-    FDeferredEvaluationResult: string;
-    FDeferredEvaluationResultError: Boolean;
+    FDebuggerEvaluator: IDDVDebuggerEvaluator;
   protected
-    /// <summary>Executes the given Call in the IDE evaluator. NOTE: this call only returns when the evaluation is done.</summary>
-    function ExecuteEvaluation( const aEvaluationCall, aOriginalEvalResult: string ): string;
+    function GetEvaluator: IDDVDebuggerEvaluator;
     function GetEvaluationCall( const Expression, TypeName, EvalResult: string ): string; virtual; abstract;
     function GetReplacementValue( const Expression, TypeName, EvalResult: string ): string; override;
-    procedure EvaluateComplete( const ExprStr, ResultStr: string; CanModify: Boolean; ResultAddress: TOTAAddress; ResultSize: LongWord;
-      ReturnCode: Integer ); override;
   end;
 
 implementation
 
 uses
   System.SysUtils;
-
-{ TCommonNotifier }
-
-procedure TCommonNotifier.AfterSave;
-begin
-  // Empty implementation on purpose - to be overridden by decendents
-end;
-
-procedure TCommonNotifier.BeforeSave;
-begin
-  // Empty implementation on purpose - to be overridden by decendents
-end;
-
-procedure TCommonNotifier.Destroyed;
-begin
-  // Empty implementation on purpose - to be overridden by decendents
-end;
-
-procedure TCommonNotifier.Modified;
-begin
-  // Empty implementation on purpose - to be overridden by decendents
-end;
-
-{ TCommonThreadNotifier }
-
-procedure TCommonThreadNotifier.EvaluateComplete( const ExprStr, ResultStr: string; CanModify: Boolean; ResultAddress: TOTAAddress; ResultSize: LongWord;
-  ReturnCode: Integer );
-begin
-  // Empty implementation on purpose - to be overridden by decendents
-end;
-
-procedure TCommonThreadNotifier.EvaluteComplete( const ExprStr, ResultStr: string; CanModify: Boolean; ResultAddress, ResultSize: LongWord;
-  ReturnCode: Integer );
-begin
-  EvaluateComplete( ExprStr, ResultStr, CanModify, TOTAAddress( ResultAddress ), LongWord( ResultSize ), ReturnCode );
-end;
-
-procedure TCommonThreadNotifier.ModifyComplete( const ExprStr, ResultStr: string; ReturnCode: Integer );
-begin
-  // Empty implementation on purpose - to be overridden by decendents
-end;
-
-procedure TCommonThreadNotifier.ThreadNotify( Reason: TOTANotifyReason );
-begin
-  // Empty implementation on purpose - to be overridden by decendents
-end;
 
 { TCommonDebuggerVisualizer }
 
@@ -224,77 +135,19 @@ end;
 
 { TCommonDebuggerEvaluationVisualizer }
 
-procedure TCommonDebuggerEvaluationVisualizer.EvaluateComplete( const ExprStr, ResultStr: string; CanModify: Boolean; ResultAddress: TOTAAddress;
-  ResultSize: LongWord; ReturnCode: Integer );
+function TCommonDebuggerEvaluationVisualizer.GetEvaluator: IDDVDebuggerEvaluator;
 begin
-  FDeferredEvaluationResultError := ( ReturnCode <> 0 );
-  FDeferredEvaluationResult := ResultStr;
-  FDeferredEvaluationCompleted := True;
-end;
-
-function TCommonDebuggerEvaluationVisualizer.ExecuteEvaluation( const aEvaluationCall, aOriginalEvalResult: string ): string;
-var
-  CurProcess: IOTAProcess;
-  CurThread: IOTAThread;
-  ResultStr: array [0 .. 4095] of Char;
-  CanModify: Boolean;
-  Done: Boolean;
-  ResultAddr, ResultSize, ResultVal: LongWord;
-  EvalRes: TOTAEvaluateResult;
-  DebugSvcs: IOTADebuggerServices;
-begin
-  Result := '';
-  if not Supports( BorlandIDEServices, IOTADebuggerServices, DebugSvcs ) then
-    Exit;
-
-  CurProcess := DebugSvcs.CurrentProcess;
-  if Assigned( CurProcess ) then
-  begin
-    CurThread := CurProcess.CurrentThread;
-    if Assigned( CurThread ) then
-      repeat
-        Done := True;
-        EvalRes := CurThread.Evaluate( aEvaluationCall, @ResultStr, Length( ResultStr ), CanModify, eseAll, '', ResultAddr, ResultSize, ResultVal, '', 0 );
-        case EvalRes of
-          erOK: { indicates evaluate operation was successful }
-            Result := ResultStr;
-          erError: { indicates evaluate operation was unsuccessful }
-            Result := Format( '%s Error: %s', [aOriginalEvalResult, ResultStr] );
-          erDeferred: { indicates evaluate operation is deferred }
-            begin
-              FDeferredEvaluationCompleted := False;
-              FDeferredEvaluationResult := '';
-              FDeferredEvaluationResultError := False;
-              FDeferredEvaluationNotifierIndex := CurThread.AddNotifier( Self );
-
-              while not FDeferredEvaluationCompleted do
-                DebugSvcs.ProcessDebugEvents;
-
-              CurThread.RemoveNotifier( FDeferredEvaluationNotifierIndex );
-              FDeferredEvaluationNotifierIndex := -1;
-              if FDeferredEvaluationResultError then
-                Result := Format( '%s Error: %s', [aOriginalEvalResult, FDeferredEvaluationResult] )
-              else // Calculation successfull
-              begin
-                if ( FDeferredEvaluationResult <> '' ) then
-                  Result := FDeferredEvaluationResult
-                else
-                  Result := ResultStr;
-              end;
-            end;
-          erBusy: { indicates evaluate operation was not attempted due to the evaluator already processing another evaluate operation }
-            begin
-              DebugSvcs.ProcessDebugEvents;
-              Done := False;
-            end;
-        end;
-      until Done;
-  end;
+  if not Assigned( FDebuggerEvaluator ) then
+    FDebuggerEvaluator := TDebuggerEvaluator.Create;
+  Result := FDebuggerEvaluator;
 end;
 
 function TCommonDebuggerEvaluationVisualizer.GetReplacementValue( const Expression, TypeName, EvalResult: string ): string;
 begin
-  Result := ExecuteEvaluation( GetEvaluationCall( Expression, TypeName, EvalResult ), EvalResult );
+  // If the evaluation is not successfull we will preappend the origninal evaluation result to the error message, so that the user
+  // has the "best" result in the debugger.
+  if not GetEvaluator.TryExecuteEvaluation( GetEvaluationCall( Expression, TypeName, EvalResult ), Result ) then
+    Result := Format( '%s - %s', [EvalResult, Result] );
 end;
 
 end.

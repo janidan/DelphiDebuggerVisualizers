@@ -9,21 +9,21 @@ package DebuggerVisualizer;
 {$EXTENDEDSYNTAX ON}
 {$IMPORTEDDATA ON}
 {$IOCHECKS ON}
-{$LOCALSYMBOLS ON}
+{$LOCALSYMBOLS OFF}
 {$LONGSTRINGS ON}
 {$OPENSTRINGS ON}
-{$OPTIMIZATION OFF}
+{$OPTIMIZATION ON}
 {$OVERFLOWCHECKS OFF}
 {$RANGECHECKS OFF}
-{$REFERENCEINFO ON}
+{$REFERENCEINFO OFF}
 {$SAFEDIVIDE OFF}
-{$STACKFRAMES ON}
+{$STACKFRAMES OFF}
 {$TYPEDADDRESS OFF}
 {$VARSTRINGCHECKS ON}
 {$WRITEABLECONST OFF}
 {$MINENUMSIZE 1}
 {$IMAGEBASE $400000}
-{$DEFINE DEBUG}
+{$DEFINE RELEASE}
 {$ENDIF IMPLICITBUILDING}
 {$DESCRIPTION 'Debugger visualizers standard Delphi Types'}
 {$DESIGNONLY}
@@ -39,6 +39,8 @@ contains
   DDV.Visualizer.Color in '..\source\DDV.Visualizer.Color.pas',
   DDV.Visualizer.Guid in '..\source\DDV.Visualizer.Guid.pas',
   DDV.Visualizer.TObject in '..\source\DDV.Visualizer.TObject.pas',
-  DDV.Visualizer.TComponent in '..\source\DDV.Visualizer.TComponent.pas';
+  DDV.Visualizer.TComponent in '..\source\DDV.Visualizer.TComponent.pas',
+  DDV.Visualizers.Evaluator in '..\source\DDV.Visualizers.Evaluator.pas',
+  DDV.Visualizers.CommonOTA in '..\source\DDV.Visualizers.CommonOTA.pas';
 
 end.

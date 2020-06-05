@@ -52,7 +52,7 @@ begin
   // The inherited call will execute the evaluation call - we may also want the standard data from the evaluation,
   // since to string normally only gives the ClassName of the object.
   vEvaluatedData := inherited GetReplacementValue( Expression, TypeName, EvalResult );
-  vName := ExecuteEvaluation( Expression + '.Name', '<Unnamed>' );
+  vName := GetEvaluator.ExecuteEvaluation( Expression + '.Name', '<Unnamed>' );
   Result := Format( '%s.%s - %s', [vEvaluatedData, vName, EvalResult] );
 end;
 
