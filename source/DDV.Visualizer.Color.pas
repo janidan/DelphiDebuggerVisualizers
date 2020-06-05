@@ -1,8 +1,8 @@
 unit DDV.Visualizer.Color;
 
-{ Delphi Code Visualizers
-  Copyright (c) 2020 Tobias Rörig
-  https://github.com/janidan/DelphiDebuggerVisualizers }
+// Delphi Code Visualizers
+// Copyright (c) 2020 Tobias Rörig
+// https://github.com/janidan/DelphiDebuggerVisualizers
 
 {* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,18 +10,11 @@ unit DDV.Visualizer.Color;
 
 interface
 
-procedure Register;
-
-implementation
-
 uses
-  System.SysUtils,
-  ToolsAPI,
-  Vcl.Graphics,
   DDV.Visualizers.Common;
 
 const
-  ColorVisualizerTypes: array [0 .. 1] of TCommonDebuggerVisualizerType = (
+  ColorVisualizerTypes: array [0 .. 1] of TCommonDebuggerVisualizerType = ( //
     ( TypeName: 'TColor' ), ( TypeName: 'Graphics::TColor' ) );
 
 resourcestring
@@ -38,7 +31,13 @@ type
     function GetVisualizerDescription: string; override;
   end;
 
-  { TColorVisualizer }
+implementation
+
+uses
+  System.SysUtils,
+  Vcl.Graphics;
+
+{ TColorVisualizer }
 
 function TColorVisualizer.GetReplacementValue( const Expression, TypeName, EvalResult: string ): string;
 begin
@@ -59,36 +58,5 @@ function TColorVisualizer.GetVisualizerName: String;
 begin
   Result := ColorVisualizerName;
 end;
-
-var
-  StdVisualizer: IOTADebuggerVisualizer;
-
-procedure Register;
-var
-  DebuggerServices: IOTADebuggerServices;
-begin
-  if Supports( BorlandIDEServices, IOTADebuggerServices, DebuggerServices ) then
-  begin
-    StdVisualizer := TColorVisualizer.Create;
-    DebuggerServices.RegisterDebugVisualizer( StdVisualizer );
-  end;
-end;
-
-procedure RemoveVisualizer;
-var
-  DebuggerServices: IOTADebuggerServices;
-begin
-  if Supports( BorlandIDEServices, IOTADebuggerServices, DebuggerServices ) then
-  begin
-    DebuggerServices.UnregisterDebugVisualizer( StdVisualizer );
-    StdVisualizer := nil;
-  end;
-end;
-
-initialization
-
-finalization
-
-RemoveVisualizer;
 
 end.

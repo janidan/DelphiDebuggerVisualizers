@@ -34,8 +34,11 @@ requires
   designide;
 
 contains
-  DDV.Visualizer.Color in '..\source\DDV.Visualizer.Color.pas',
   DDV.Visualizers.Common in '..\source\DDV.Visualizers.Common.pas',
-  DDV.Visualizer.Guid in '..\source\DDV.Visualizer.Guid.pas';
+  DDV.Visualizers.Registrations in '..\source\DDV.Visualizers.Registrations.pas',
+  DDV.Visualizer.Color in '..\source\DDV.Visualizer.Color.pas',
+  DDV.Visualizer.Guid in '..\source\DDV.Visualizer.Guid.pas',
+  DDV.Visualizer.TObject in '..\source\DDV.Visualizer.TObject.pas',
+  DDV.Visualizer.TComponent in '..\source\DDV.Visualizer.TComponent.pas';
 
 end.

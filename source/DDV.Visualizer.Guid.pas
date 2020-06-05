@@ -1,8 +1,8 @@
 unit DDV.Visualizer.Guid;
 
-{ Delphi Code Visualizers
-  Copyright (c) 2020 Tobias Rörig
-  https://github.com/janidan/DelphiDebuggerVisualizers }
+// Delphi Code Visualizers
+// Copyright (c) 2020 Tobias Rörig
+// https://github.com/janidan/DelphiDebuggerVisualizers
 
 {* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,18 +10,12 @@ unit DDV.Visualizer.Guid;
 
 interface
 
-procedure Register;
-
-implementation
-
 uses
-  System.SysUtils,
-  ToolsAPI,
   DDV.Visualizers.Common;
 
 const
-  GuidVisualizerTypes: array [0 .. 1] of TCommonDebuggerVisualizerType = (
-    ( TypeName: 'TGUID' ), ( TypeName: 'System::TGUID' )  );
+  GuidVisualizerTypes: array [0 .. 1] of TCommonDebuggerVisualizerType = ( //
+    ( TypeName: 'TGUID' ), ( TypeName: 'System::TGUID' ) );
 
 resourcestring
   GuidVisualizerName = 'TGUID visualizer';
@@ -32,12 +26,17 @@ type
   protected
     function GetSupportedTypesList: TArray<TCommonDebuggerVisualizerType>; override;
     function GetEvaluationCall( const Expression, TypeName, EvalResult: string ): string; override;
-    
+
     function GetVisualizerName: string; override;
     function GetVisualizerDescription: string; override;
   end;
 
-  { TGuidVisualizer }
+implementation
+
+uses
+  System.SysUtils;
+
+{ TGuidVisualizer }
 
 function TGuidVisualizer.GetEvaluationCall( const Expression, TypeName, EvalResult: string ): string;
 begin
@@ -58,36 +57,5 @@ function TGuidVisualizer.GetVisualizerName: String;
 begin
   Result := GuidVisualizerName;
 end;
-
-var
-  StdVisualizer: IOTADebuggerVisualizer;
-
-procedure Register;
-var
-  DebuggerServices: IOTADebuggerServices;
-begin
-  if Supports( BorlandIDEServices, IOTADebuggerServices, DebuggerServices ) then
-  begin
-    StdVisualizer := TGuidVisualizer.Create;
-    DebuggerServices.RegisterDebugVisualizer( StdVisualizer );
-  end;
-end;
-
-procedure RemoveVisualizer;
-var
-  DebuggerServices: IOTADebuggerServices;
-begin
-  if Supports( BorlandIDEServices, IOTADebuggerServices, DebuggerServices ) then
-  begin
-    DebuggerServices.UnregisterDebugVisualizer( StdVisualizer );
-    StdVisualizer := nil;
-  end;
-end;
-
-initialization
-
-finalization
-
-RemoveVisualizer;
 
 end.

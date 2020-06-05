@@ -1,8 +1,8 @@
 unit DDV.Visualizers.Common;
 
-{ Delphi Code Visualizers
-  Copyright (c) 2020 Tobias Rörig
-  https://github.com/janidan/DelphiDebuggerVisualizers }
+// Delphi Code Visualizers
+// Copyright (c) 2020 Tobias Rörig
+// https://github.com/janidan/DelphiDebuggerVisualizers
 
 {* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,7 +14,7 @@ uses
   ToolsAPI;
 
 type
-  TCommonNotifier = class(TInterfacedObject, IOTANotifier)
+  TCommonNotifier = class( TInterfacedObject, IOTANotifier )
   protected
     {$REGION 'IOTANotifier interface implementation'}
     { This procedure is called immediately after the item is successfully saved.
@@ -32,29 +32,24 @@ type
     {$ENDREGION 'IOTANotifier interface implementation'}
   end;
 
-  TCommonThreadNotifier = class(TCommonNotifier,
-    IOTAThreadNotifier, IOTAThreadNotifier160)
+  TCommonThreadNotifier = class( TCommonNotifier, IOTAThreadNotifier, IOTAThreadNotifier160 )
   protected
     {$REGION 'IOTAThreadNotifier interface implementation'}
     { This is called when the process state changes for this thread }
-    procedure ThreadNotify(Reason: TOTANotifyReason); virtual;
+    procedure ThreadNotify( Reason: TOTANotifyReason ); virtual;
     { This is called when an evaluate that returned erDeferred completes.
       ReturnCode <> 0 if error }
-    procedure EvaluteComplete(const ExprStr, ResultStr: string;
-      CanModify: Boolean; ResultAddress, ResultSize: LongWord;
-      ReturnCode: Integer);
+    procedure EvaluteComplete( const ExprStr, ResultStr: string; CanModify: Boolean; ResultAddress, ResultSize: LongWord; ReturnCode: Integer );
     { This is called when a modify that returned erDeferred completes.
       ReturnCode <> 0 if error }
-    procedure ModifyComplete(const ExprStr, ResultStr: string;
-      ReturnCode: Integer); virtual;
-   {$ENDREGION 'IOTAThreadNotifier interface implementation'}
-   {$REGION 'IOTAThreadNotifier160 interface implementation'}
+    procedure ModifyComplete( const ExprStr, ResultStr: string; ReturnCode: Integer ); virtual;
+    {$ENDREGION 'IOTAThreadNotifier interface implementation'}
+    {$REGION 'IOTAThreadNotifier160 interface implementation'}
     { This is called when an evaluate that returned erDeferred completes.
       ReturnCode <> 0 if error }
-    procedure EvaluateComplete(const ExprStr, ResultStr: string;
-      CanModify: Boolean; ResultAddress: TOTAAddress; ResultSize: LongWord;
-      ReturnCode: Integer); virtual;
-   {$ENDREGION 'IOTAThreadNotifier160 interface implementation'}
+    procedure EvaluateComplete( const ExprStr, ResultStr: string; CanModify: Boolean; ResultAddress: TOTAAddress; ResultSize: LongWord;
+      ReturnCode: Integer ); virtual;
+    {$ENDREGION 'IOTAThreadNotifier160 interface implementation'}
   end;
 
   TCommonDebuggerVisualizerType = record
@@ -63,28 +58,25 @@ type
     IsGeneric: Boolean;
   end;
 
-  TCommonDebuggerVisualizer = class(TCommonThreadNotifier,
-    IOTADebuggerVisualizer, IOTADebuggerVisualizer250,
-    IOTADebuggerVisualizerValueReplacer)
+  TCommonDebuggerVisualizer = class( TCommonThreadNotifier, IOTADebuggerVisualizer, IOTADebuggerVisualizer250, IOTADebuggerVisualizerValueReplacer )
   protected
-    function ConvertStaticToDynamicArray<T>(const aStatic: array of T) : TArray<T>;
+    function ConvertStaticToDynamicArray<T>( const aStatic: array of T ): TArray<T>;
     function GetSupportedTypesList: TArray<TCommonDebuggerVisualizerType>; virtual; abstract;
   protected // Interface implementations
     {$REGION 'IOTADebuggerVisualizer interface implementation'}
     { This is the base for debugger visualizers.  This interface allows you to
       specify a name, a unique identifier, and a description for your visualizer.
-      It also allows you to specify which types the visualizer will handle }
+     It also allows you to specify which types the visualizer will handle }
 
     { Return the number of types supported by this visualizer }
     function GetSupportedTypeCount: Integer; virtual;
     { Return the Index'd Type.  TypeName is the type.  AllDescendants indicates
       whether or not types descending from this type should use this visualizer
-      as well. }
-    procedure GetSupportedType(Index: Integer; var TypeName: string;
-      var AllDescendants: Boolean); overload; virtual;
+     as well. }
+    procedure GetSupportedType( Index: Integer; var TypeName: string; var AllDescendants: Boolean ); overload; virtual;
     { Return a unique identifier for this visualizer.  This identifier is used
       as the keyname when storing data for this visualizer in the registry.  It
-      should not be translated }
+     should not be translated }
     function GetVisualizerIdentifier: string; virtual;
     { Return the name of the visualizer to be shown in the Tools  Options dialog }
     function GetVisualizerName: string; virtual;
@@ -94,23 +86,21 @@ type
     {$REGION 'IOTADebuggerVisualizer250 interface implementation'}
     { Return the Index'd Type.  TypeName is the type.  AllDescendants indicates
       whether or not types descending from this type should use this visualizer
-      as well. IsGeneric indicates whether this type is a generic type. }
-    procedure GetSupportedType(Index: Integer; var TypeName: string;
-      var AllDescendants: Boolean; var IsGeneric: Boolean); overload; virtual;
+     as well. IsGeneric indicates whether this type is a generic type. }
+    procedure GetSupportedType( Index: Integer; var TypeName: string; var AllDescendants: Boolean; var IsGeneric: Boolean ); overload; virtual;
     {$ENDREGION 'IOTADebuggerVisualizer250 interface implementation'}
     {$REGION 'IOTADebuggerVisualizerValueReplacer interface implementation'}
     { This is the simplest form of a debug visualizer.  With it, you can replace
       the value returned by the evaluator with a more meaningful value.  The
-      replacement value will appear in the normal debugger UI (i.e. Evaluator
-      Tooltips, Watch View, Locals View, Evaluate/Modify dialog,
-      Debug Inspector View).
-      There can be only one active IOTADebuggerVisualizerValueReplacer per type }
-    function GetReplacementValue(const Expression, TypeName, EvalResult: string)
-      : string; virtual;
+     replacement value will appear in the normal debugger UI (i.e. Evaluator
+     Tooltips, Watch View, Locals View, Evaluate/Modify dialog,
+     Debug Inspector View).
+     There can be only one active IOTADebuggerVisualizerValueReplacer per type }
+    function GetReplacementValue( const Expression, TypeName, EvalResult: string ): string; virtual;
     {$ENDREGION 'IOTADebuggerVisualizerValueReplacer interface implementation'}
   end;
 
-  TCommonDebuggerEvaluationVisualizer = class(TCommonDebuggerVisualizer)
+  TCommonDebuggerEvaluationVisualizer = class( TCommonDebuggerVisualizer )
   private
     // The DeferredEvaluation variables are used for storing the temporary results during the ExecuteEvaluation call.
     FDeferredEvaluationNotifierIndex: Integer;
@@ -119,12 +109,11 @@ type
     FDeferredEvaluationResultError: Boolean;
   protected
     /// <summary>Executes the given Call in the IDE evaluator. NOTE: this call only returns when the evaluation is done.</summary>
-    function ExecuteEvaluation(const aEvaluationCall, aOriginalEvalResult : string): string;
-    function GetEvaluationCall(const Expression, TypeName, EvalResult: string): string; virtual; abstract;
-    function GetReplacementValue(const Expression, TypeName, EvalResult: string): string; override;
-    procedure EvaluateComplete(const ExprStr, ResultStr: string;
-      CanModify: Boolean; ResultAddress: TOTAAddress; ResultSize: LongWord;
-      ReturnCode: Integer); override;
+    function ExecuteEvaluation( const aEvaluationCall, aOriginalEvalResult: string ): string;
+    function GetEvaluationCall( const Expression, TypeName, EvalResult: string ): string; virtual; abstract;
+    function GetReplacementValue( const Expression, TypeName, EvalResult: string ): string; override;
+    procedure EvaluateComplete( const ExprStr, ResultStr: string; CanModify: Boolean; ResultAddress: TOTAAddress; ResultSize: LongWord;
+      ReturnCode: Integer ); override;
   end;
 
 implementation
@@ -156,52 +145,45 @@ end;
 
 { TCommonThreadNotifier }
 
-procedure TCommonThreadNotifier.EvaluateComplete(const ExprStr,
-  ResultStr: string; CanModify: Boolean; ResultAddress: TOTAAddress;
-  ResultSize: LongWord; ReturnCode: Integer);
+procedure TCommonThreadNotifier.EvaluateComplete( const ExprStr, ResultStr: string; CanModify: Boolean; ResultAddress: TOTAAddress; ResultSize: LongWord;
+  ReturnCode: Integer );
 begin
   // Empty implementation on purpose - to be overridden by decendents
 end;
 
-procedure TCommonThreadNotifier.EvaluteComplete(const ExprStr,
-  ResultStr: string; CanModify: Boolean; ResultAddress, ResultSize: LongWord;
-  ReturnCode: Integer);
+procedure TCommonThreadNotifier.EvaluteComplete( const ExprStr, ResultStr: string; CanModify: Boolean; ResultAddress, ResultSize: LongWord;
+  ReturnCode: Integer );
 begin
-  EvaluateComplete(ExprStr, ResultStr, CanModify, TOTAAddress(ResultAddress),
-    LongWord(ResultSize), ReturnCode);
+  EvaluateComplete( ExprStr, ResultStr, CanModify, TOTAAddress( ResultAddress ), LongWord( ResultSize ), ReturnCode );
 end;
 
-procedure TCommonThreadNotifier.ModifyComplete(const ExprStr, ResultStr: string;
-  ReturnCode: Integer);
+procedure TCommonThreadNotifier.ModifyComplete( const ExprStr, ResultStr: string; ReturnCode: Integer );
 begin
   // Empty implementation on purpose - to be overridden by decendents
 end;
 
-procedure TCommonThreadNotifier.ThreadNotify(Reason: TOTANotifyReason);
+procedure TCommonThreadNotifier.ThreadNotify( Reason: TOTANotifyReason );
 begin
   // Empty implementation on purpose - to be overridden by decendents
 end;
 
 { TCommonDebuggerVisualizer }
 
-function TCommonDebuggerVisualizer.ConvertStaticToDynamicArray<T>
-  (const aStatic: array of T): TArray<T>;
+function TCommonDebuggerVisualizer.ConvertStaticToDynamicArray<T>( const aStatic: array of T ): TArray<T>;
 var
   i: Integer;
 begin
-  SetLength(Result, Length(aStatic));
-  for i := 0 to high(aStatic) do
+  SetLength( Result, Length( aStatic ) );
+  for i := 0 to high( aStatic ) do
     Result[i] := aStatic[i];
 end;
 
-function TCommonDebuggerVisualizer.GetReplacementValue(const Expression,
-  TypeName, EvalResult: string): string;
+function TCommonDebuggerVisualizer.GetReplacementValue( const Expression, TypeName, EvalResult: string ): string;
 begin
-  Result := Format('%s : %s = %s', [Expression, TypeName, EvalResult]);
+  Result := Format( '%s : %s = %s', [Expression, TypeName, EvalResult] );
 end;
 
-procedure TCommonDebuggerVisualizer.GetSupportedType(Index: Integer;
-  var TypeName: string; var AllDescendants, IsGeneric: Boolean);
+procedure TCommonDebuggerVisualizer.GetSupportedType( Index: Integer; var TypeName: string; var AllDescendants, IsGeneric: Boolean );
 var
   vTypeInfo: TCommonDebuggerVisualizerType;
 begin
@@ -211,8 +193,7 @@ begin
   IsGeneric := vTypeInfo.IsGeneric;
 end;
 
-procedure TCommonDebuggerVisualizer.GetSupportedType(Index: Integer;
-  var TypeName: string; var AllDescendants: Boolean);
+procedure TCommonDebuggerVisualizer.GetSupportedType( Index: Integer; var TypeName: string; var AllDescendants: Boolean );
 var
   vTypeInfo: TCommonDebuggerVisualizerType;
 begin
@@ -223,7 +204,7 @@ end;
 
 function TCommonDebuggerVisualizer.GetSupportedTypeCount: Integer;
 begin
-  Result := Length(GetSupportedTypesList);
+  Result := Length( GetSupportedTypesList );
 end;
 
 function TCommonDebuggerVisualizer.GetVisualizerDescription: string;
@@ -243,17 +224,15 @@ end;
 
 { TCommonDebuggerEvaluationVisualizer }
 
-procedure TCommonDebuggerEvaluationVisualizer.EvaluateComplete(const ExprStr,
-  ResultStr: string; CanModify: Boolean; ResultAddress: TOTAAddress;
-  ResultSize: LongWord; ReturnCode: Integer);
+procedure TCommonDebuggerEvaluationVisualizer.EvaluateComplete( const ExprStr, ResultStr: string; CanModify: Boolean; ResultAddress: TOTAAddress;
+  ResultSize: LongWord; ReturnCode: Integer );
 begin
-  FDeferredEvaluationResultError := (ReturnCode <> 0);
+  FDeferredEvaluationResultError := ( ReturnCode <> 0 );
   FDeferredEvaluationResult := ResultStr;
   FDeferredEvaluationCompleted := True;
 end;
 
-function TCommonDebuggerEvaluationVisualizer.ExecuteEvaluation(
-  const aEvaluationCall, aOriginalEvalResult: string): string;
+function TCommonDebuggerEvaluationVisualizer.ExecuteEvaluation( const aEvaluationCall, aOriginalEvalResult: string ): string;
 var
   CurProcess: IOTAProcess;
   CurThread: IOTAThread;
@@ -265,53 +244,45 @@ var
   DebugSvcs: IOTADebuggerServices;
 begin
   Result := '';
-  if not Supports(BorlandIDEServices, IOTADebuggerServices, DebugSvcs) then
+  if not Supports( BorlandIDEServices, IOTADebuggerServices, DebugSvcs ) then
     Exit;
 
   CurProcess := DebugSvcs.CurrentProcess;
-  if Assigned(CurProcess) then
+  if Assigned( CurProcess ) then
   begin
     CurThread := CurProcess.CurrentThread;
-    if Assigned(CurThread) then
+    if Assigned( CurThread ) then
       repeat
         Done := True;
-        EvalRes := CurThread.Evaluate(aEvaluationCall, @ResultStr,
-          Length(ResultStr), CanModify, eseAll, '', ResultAddr, ResultSize,
-          ResultVal, '', 0);
+        EvalRes := CurThread.Evaluate( aEvaluationCall, @ResultStr, Length( ResultStr ), CanModify, eseAll, '', ResultAddr, ResultSize, ResultVal, '', 0 );
         case EvalRes of
-          { erOK       - indicates evaluate operation was successful
-            erError    - indicates evaluate operation was unsuccessful
-            erDeferred - indicates evaluate operation is deferred
-            erBusy     - indicates evaluate operation was not attempted due to the
-            evaluator already processing another evaluate operation }
-          erOK:
+          erOK: { indicates evaluate operation was successful }
             Result := ResultStr;
-          erError:
-            Result := Format('%s Error: %s', [aOriginalEvalResult, ResultStr]);
-          erDeferred:
+          erError: { indicates evaluate operation was unsuccessful }
+            Result := Format( '%s Error: %s', [aOriginalEvalResult, ResultStr] );
+          erDeferred: { indicates evaluate operation is deferred }
             begin
               FDeferredEvaluationCompleted := False;
               FDeferredEvaluationResult := '';
               FDeferredEvaluationResultError := False;
-              FDeferredEvaluationNotifierIndex := CurThread.AddNotifier(Self);
+              FDeferredEvaluationNotifierIndex := CurThread.AddNotifier( Self );
 
               while not FDeferredEvaluationCompleted do
                 DebugSvcs.ProcessDebugEvents;
 
-              CurThread.RemoveNotifier(FDeferredEvaluationNotifierIndex);
+              CurThread.RemoveNotifier( FDeferredEvaluationNotifierIndex );
               FDeferredEvaluationNotifierIndex := -1;
               if FDeferredEvaluationResultError then
-                Result := Format('%s Error: %s',
-                  [aOriginalEvalResult, FDeferredEvaluationResult])
+                Result := Format( '%s Error: %s', [aOriginalEvalResult, FDeferredEvaluationResult] )
               else // Calculation successfull
               begin
-                if (FDeferredEvaluationResult <> '') then
+                if ( FDeferredEvaluationResult <> '' ) then
                   Result := FDeferredEvaluationResult
                 else
                   Result := ResultStr;
               end;
             end;
-          erBusy:
+          erBusy: { indicates evaluate operation was not attempted due to the evaluator already processing another evaluate operation }
             begin
               DebugSvcs.ProcessDebugEvents;
               Done := False;
@@ -321,9 +292,9 @@ begin
   end;
 end;
 
-function TCommonDebuggerEvaluationVisualizer.GetReplacementValue(const Expression, TypeName, EvalResult: string): string;
+function TCommonDebuggerEvaluationVisualizer.GetReplacementValue( const Expression, TypeName, EvalResult: string ): string;
 begin
-  Result := ExecuteEvaluation(GetEvaluationCall(Expression, TypeName, EvalResult), EvalResult);
+  Result := ExecuteEvaluation( GetEvaluationCall( Expression, TypeName, EvalResult ), EvalResult );
 end;
 
 end.
