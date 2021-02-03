@@ -48,10 +48,14 @@ function TObjectVisualizer.GetReplacementValue( const Expression, TypeName, Eval
 var
   vEvaluatedData: string;
 begin
+  // In case of nil we will just return the nil data instread of "nil-nil" which just looks wrong.
+  if ( EvalResult = 'nil' ) then
+    Exit( 'nil' );
+
   // The inherited call will execute the evaluation call - we may also want the standard data from the evaluation,
   // since to string normally only gives the ClassName of the object.
   vEvaluatedData := inherited GetReplacementValue( Expression, TypeName, EvalResult );
-  Result := Format( '%s - %s', [vEvaluatedData, EvalResult] );
+  Result := Format( '%s (Orig: %s)', [vEvaluatedData, EvalResult] );
 end;
 
 function TObjectVisualizer.GetSupportedTypesList: TArray<TCommonDebuggerVisualizerType>;

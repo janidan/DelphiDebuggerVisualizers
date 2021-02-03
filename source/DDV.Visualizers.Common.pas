@@ -144,10 +144,15 @@ end;
 
 function TCommonDebuggerEvaluationVisualizer.GetReplacementValue( const Expression, TypeName, EvalResult: string ): string;
 begin
+  // if the evaluation has already resulted in "nil" there is no point in executing an additonal evaluation call.
+  // Even worse - the error of an invalid call to the evaluator only clutters the result.
+  if ( EvalResult = 'nil' ) then
+    Exit( 'nil' );
+
   // If the evaluation is not successfull we will preappend the origninal evaluation result to the error message, so that the user
   // has the "best" result in the debugger.
   if not GetEvaluator.TryExecuteEvaluation( GetEvaluationCall( Expression, TypeName, EvalResult ), Result ) then
-    Result := Format( '%s - %s', [EvalResult, Result] );
+    Result := Format( '%s (Eval: %s)', [EvalResult, Result] );
 end;
 
 end.
